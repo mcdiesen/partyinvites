@@ -44,15 +44,32 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 
 type formData struct {
 	*Rsvp
-	Erros []string
+	Errors []string
 }
 
 // formHandler function
 func formHandler(w http.ResponseWriter, r *http.Request) {
+	// 	...Execute the template form.html
 	if r.Method == http.MethodGet {
 		templates["form"].Execute(w, formData{
-			Rsvp: &Rsvp{}, Erros: []string{},
+			Rsvp: &Rsvp{}, Errors: []string{},
 		})
+	} else if r.Method == http.MethodPost {
+		r.ParseForm()
+		responseData := Rsvp{
+			Name:       r.Form["Name"][0],
+			Email:      r.Form["Email"][0],
+			Phone:      r.Form["Phone"][0],
+			WillAttend: r.Form["WillAttend"][0] == "true",
+		}
+
+		responses = append(responses, &responseData)
+		if responseData.WillAttend {
+			templates["thanks"].Execute(w, responseData.Name)
+		} else {
+			templates["sorry"].Execute(w, responseData.Name)
+		}
+
 	}
 }
 
