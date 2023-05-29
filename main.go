@@ -62,14 +62,29 @@ func formHandler(w http.ResponseWriter, r *http.Request) {
 			Phone:      r.Form["Phone"][0],
 			WillAttend: r.Form["WillAttend"][0] == "true",
 		}
-
-		responses = append(responses, &responseData)
-		if responseData.WillAttend {
-			templates["thanks"].Execute(w, responseData.Name)
-		} else {
-			templates["sorry"].Execute(w, responseData.Name)
+		//Validate the fields of the form
+		errors := []string{}
+		if responseData.Name == "" {
+			errors = append(errors, "Please enter your name")
 		}
-
+		if responseData.Email == "" {
+			errors = append(errors, "Please enter your email")
+		}
+		if responseData.Phone == "" {
+			errors = append(errors, "Please enter your phone number")
+		}
+		if len(errors) > 0 {
+			templates["form"].Execute(w, formData{
+				Rsvp: &responseData, Errors: errors,
+			})
+		} else {
+			responses = append(responses, &responseData)
+			if responseData.WillAttend {
+				templates["thanks"].Execute(w, responseData.Name)
+			} else {
+				templates["sorry"].Execute(w, responseData.Name)
+			}
+		}
 	}
 }
 
